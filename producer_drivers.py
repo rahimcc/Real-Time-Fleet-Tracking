@@ -7,12 +7,10 @@ import socket
 import logging
 
 
-
 logging.basicConfig(level=logging.DEBUG)
 
 host = "localhost"
 port = 9092
-
 
 try: 
     sock = socket.create_connection((host,port), timeout = 5 )
@@ -20,10 +18,7 @@ try:
     sock.close()
 
 except Exception as e:
-
     print(f'TCP connection failed')
-
-
 
 
 BOOTSTRAP = "127.0.0.1:9092"
