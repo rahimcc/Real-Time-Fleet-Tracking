@@ -1,6 +1,5 @@
 import asyncio
 import json
-import redis.asyncio as aredis
 import random
 import time
 
@@ -10,13 +9,15 @@ from fastapi.staticfiles import StaticFiles
 from backend.producers.vehicle_simulator import simulate_vehicle
 
 
+
+
 connected_clients: set[WebSocket] = set()
 
 app = FastAPI()
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    with open("/Users/rahimsharifov/Documents/Document/Real-Time-Fleet-Tracking/frontend/static/index-3.html") as f:
+    with open("frontend/static/index-3.html") as f:
         return f.read()
 
 
