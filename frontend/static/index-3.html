@@ -51,9 +51,10 @@
       .setLngLat([49.8671, 40.4093])
       .addTo(map);
 
-    const ws = new WebSocket(`ws://${location.host}/ws`);
+    const ws = new WebSocket(`ws://localhost:8000/ws`);
 
     ws.onopen = () => console.log("WebSocket connected");
+    ws.onmessage = (e) => console.log("received:", e.data);
     ws.onerror = (err) => console.error("WebSocket error:", err);
     ws.onclose = () => console.log("WebSocket closed");
 
