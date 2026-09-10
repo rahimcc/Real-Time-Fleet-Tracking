@@ -14,7 +14,7 @@ port = 9092
 
 try: 
     sock = socket.create_connection((host,port), timeout = 5 )
-    print(f" TCP connection to {host}:{port} succeded ")
+    print(f" TCP connection to {host}:{port} succeded.")
     sock.close()
 
 except Exception as e:
