@@ -1,6 +1,13 @@
 import json
 import time
+import random
+from fastapi import FastAPI , WebSocket , WebSocketDisconnect
 
+
+SECONDS_PER_HOUR = 3600
+KM_PER_DEGREE_LATITUDE = 111 
+
+connected_clients: set[WebSocket] = set()
 
 vehicle = { 
     "lat": 40.4093,
@@ -10,7 +17,7 @@ vehicle = {
 }
 
 
-async def simulate_vehicle():
+async def simulate_vehicle() -> None:
     """Moves the vehicle a small random step every second"""
 
     while True: 
@@ -23,7 +30,6 @@ async def simulate_vehicle():
 
         step = vehicle['speed_km'] / 3600 / 111 * 200
 
-
         vehicle["lat"] += step * random.uniform(10, 12) * _cos(vehicle["heading"])
         vehicle["lon"] += step * random.uniform(10, 12) * _sin(vehicle["heading"])
  
@@ -34,8 +40,7 @@ async def simulate_vehicle():
             "timestamp": time.time(),
         })
 
-
-        # print(payload)
+        print(payload)
 
         dead = set()
         for client in connected_clients:
@@ -54,3 +59,6 @@ def _cos(deg):
 def _sin(deg):
     import math
     return math.sin(math.radians(deg))
+
+
+simulate_vehicle()
