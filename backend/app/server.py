@@ -24,7 +24,7 @@ vehicle = {
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    with open("static/index.html") as f:
+    with open("static/index-3.html") as f:
         return f.read()
 
 
@@ -46,12 +46,13 @@ async def simulate_vehicle():
 
     while True: 
 
+       # print(" STEP 1: entering loop iteration")
         if random.random() < 0.1:
             vehicle['heading'] += random.uniform(-45,45)
 
-        vehicle['speed_km'] = round(random.uniform(20,60),1)
+        vehicle['speed_km'] = round(random.uniform(120,160),1)
 
-        step = vehicle['speed_km'] / 3600 / 111
+        step = vehicle['speed_km'] / 3600 / 111 * 200
 
 
         vehicle["lat"] += step * random.uniform(10, 12) * _cos(vehicle["heading"])
@@ -64,7 +65,9 @@ async def simulate_vehicle():
             "timestamp": time.time(),
         })
 
-    
+
+        # print(payload)
+
         dead = set()
         for client in connected_clients:
             try:
@@ -85,5 +88,7 @@ def _sin(deg):
  
 @app.on_event("startup")
 async def startup():
+    print("STARTUP: creating simulate_vehicle task")
     asyncio.create_task(simulate_vehicle())
+    print("STARTUP: task created")
  
