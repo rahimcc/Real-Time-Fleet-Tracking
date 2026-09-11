@@ -11,7 +11,8 @@ Currently uses public OSRM demo server
 
 import requests
 import random
-from baku_metro_stations import BAKU_METRO_STATIONS
+from backend.services.baku_metro_stations import BAKU_METRO_STATIONS
+import json
 
 OSRM_URL = "http://router.project-osrm.org/route/v1/driving"
 
@@ -43,6 +44,24 @@ def fetch_route(start_lat, start_lon, end_lat, end_lon) -> list[tuple[float,floa
             return []
 
         coords = data['routes'][0]['geometry']['coordinates']
+
+        geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "LineString",
+                    # GeoJSON expects [lon, lat] order, opposite of our (lat, lon) tuples
+                    "coordinates": [[lat, lon] for lat, lon in coords],
+                     },
+                 }
+            ],
+        }
+
+        with open('data.geojson', "w") as f:
+            json.dump(geojson, f, indent=2)
 
         return [ (lat,lon) for lat,lon in coords]
     except Exception as e:
