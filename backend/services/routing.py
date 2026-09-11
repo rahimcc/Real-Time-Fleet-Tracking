@@ -52,7 +52,7 @@ def fetch_route(start_lat, start_lon, end_lat, end_lon) -> list[tuple[float,floa
 
 def geocode(place_name: str) -> tuple[float,float]: 
     """ 
-    Converts name of location into geocoordinates 
+    Converts name of location into geo coordinates. 1 request per second 
 
         Args:
             place_name : Name of the place 
@@ -60,7 +60,6 @@ def geocode(place_name: str) -> tuple[float,float]:
         Returns: 
 
             tuple[float,float]: Tuple of coordinates 
-
     """
 
     url = "https://nominatim.openstreetmap.org/search"
@@ -83,7 +82,7 @@ def geocode(place_name: str) -> tuple[float,float]:
     except Exception as e:
 
         print(f'geocode error: {e}')
-        return None 
+        return None
 
 
-print ( geocode('Baku'))
+print(geocode('Baku'))
