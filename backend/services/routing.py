@@ -50,4 +50,40 @@ def fetch_route(start_lat, start_lon, end_lat, end_lon) -> list[tuple[float,floa
         return []
     
 
-print(fetch_route(40.3777,49.8920,40.4093, 49.8671))
+def geocode(place_name: str) -> tuple[float,float]: 
+    """ 
+    Converts name of location into geocoordinates 
+
+        Args:
+            place_name : Name of the place 
+        
+        Returns: 
+
+            tuple[float,float]: Tuple of coordinates 
+
+    """
+
+    url = "https://nominatim.openstreetmap.org/search"
+    params = {"q": place_name, "format": "json", "limit": 1 }
+    headers = { "User-Agent": "fleet-tracking-demo/1.0"}
+
+
+    try: 
+        response = requests.get(url , params=params, headers=headers, timeout= 5)
+        results = response.json()
+
+        if not results: 
+            return None
+
+        lat = float(results[0]["lat"])
+        lon = float(results[0]["lon"])
+
+        return lat,lon 
+
+    except Exception as e:
+
+        print(f'geocode error: {e}')
+        return None 
+
+
+print ( geocode('Baku'))
