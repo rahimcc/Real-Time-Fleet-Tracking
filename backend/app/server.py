@@ -42,6 +42,7 @@ async def broadcast(payload):
         try:
             await client.send_text(payload)
             print(f"broadcasting to {len(connected_clients)} client(s): {payload}")
+            print(payload)
         except Exception:
             dead.add(client)
             connected_clients.difference_update(dead)

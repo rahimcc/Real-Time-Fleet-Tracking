@@ -51,6 +51,10 @@
       .setLngLat([49.8671, 40.4093])
       .addTo(map);
 
+    // separate markers for start/end, distinct color from the bus
+    const startMarker = new maplibregl.Marker({ color: '#22c55e' }); // green
+    const endMarker = new maplibregl.Marker({ color: '#ef4444' });   // red
+
     const ws = new WebSocket(`ws://localhost:8000/ws`);
 
     ws.onopen = () => console.log("WebSocket connected");
@@ -64,6 +68,12 @@
 
       marker.setLngLat([d.lon, d.lat]);
       map.easeTo({ center: [d.lon, d.lat], duration: 900 });
+
+      if (d.start_lat && d.end_lat) {
+          startMarker.setLngLat([d.start_lon, d.start_lat]).addTo(map);
+          endMarker.setLngLat([d.end_lon, d.end_lat]).addTo(map);
+      }
+
       document.getElementById('speed').textContent = d.speed_kmh;
       document.getElementById('updated').textContent = new Date(d.timestamp * 1000).toLocaleTimeString();
     };
