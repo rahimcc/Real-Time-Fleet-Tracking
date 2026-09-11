@@ -10,7 +10,8 @@ Currently uses public OSRM demo server
 """
 
 import requests
-
+import random
+from baku_metro_stations import BAKU_METRO_STATIONS
 
 OSRM_URL = "http://router.project-osrm.org/route/v1/driving"
 
@@ -52,7 +53,7 @@ def fetch_route(start_lat, start_lon, end_lat, end_lon) -> list[tuple[float,floa
 
 def geocode(place_name: str) -> tuple[float,float]: 
     """ 
-    Converts name of location into geocoordinates 
+    Converts name of location into geo coordinates. 1 request per second 
 
         Args:
             place_name : Name of the place 
@@ -60,7 +61,6 @@ def geocode(place_name: str) -> tuple[float,float]:
         Returns: 
 
             tuple[float,float]: Tuple of coordinates 
-
     """
 
     url = "https://nominatim.openstreetmap.org/search"
@@ -83,7 +83,23 @@ def geocode(place_name: str) -> tuple[float,float]:
     except Exception as e:
 
         print(f'geocode error: {e}')
-        return None 
+        return None
+
+def pick_random_trip() -> tuple[str,str]:
+   """
+   Picks start and destination location from Baku Metro Station0
+   
+      returns: 
+         tuple(str,str): Ordered tuple, start and destination location
+
+   """
 
 
-print ( geocode('Baku'))
+   station_names = list(BAKU_METRO_STATIONS.keys())
+
+   start_name, end_name = random.sample(station_names,2)
+
+   return (start_name,end_name)
+
+
+print(pick_random_trip())
