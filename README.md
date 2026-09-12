@@ -1,6 +1,5 @@
 # Real-Time-Fleet-Tracking
 
-# Real-Time Fleet Tracking
 
 > 🚧 **Work in progress** — this is an evolving portfolio project. Currently
 > implements a single simulated vehicle tracked live on a map; the full
@@ -14,8 +13,7 @@ a whole fleet of drivers and order deliveries.
 
 ## Demo
 
-*(add a screenshot or short GIF here once you have one — this is one of
-the highest-value things you can add to this README)*
+https://livefleet.site
 
 ## Architecture (planned)
 
