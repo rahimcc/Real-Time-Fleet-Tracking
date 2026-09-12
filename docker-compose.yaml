@@ -1,0 +1,26 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - dashboard
+
+  dashboard:
+    build: .
+    container_name: dashboard
+    restart: unless-stopped
+    expose:
+      - "8000"   # no longer publicly mapped — only reachable by Caddy internally
+    # remove any "ports: 8000:8000" line entirely
+
+volumes:
+  caddy-data:
+  caddy-config:
