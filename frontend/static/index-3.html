@@ -57,7 +57,7 @@
 
     const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:" ;
 
-    const ws = new WebSocket(`${wsProtocol}://${location.host}/ws`);
+    const ws = new WebSocket(`${wsProtocol}//${location.host}/ws`);
 
     ws.onopen = () => console.log("WebSocket connected");
     ws.onmessage = (e) => console.log("received:", e.data);
