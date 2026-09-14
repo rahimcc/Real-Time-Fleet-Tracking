@@ -8,9 +8,14 @@ import logging
 from backend.static.constants import BOOTSTRAP, CITY_CENTER , NUM_DRIVERS
 from backend.static.baku_metro_stations import BAKU_METRO_STATIONS
 from backend.services.routing import pick_random_trip, fetch_route
-from backend.app.server import broadcast
 import asyncio
 
+
+ECONDS_PER_HOUR = 3600
+KM_PER_DEGREE_LATITUDE = 111
+
+host = "localhost"
+port = 9092
 
 
 class Vehicle:
@@ -24,33 +29,86 @@ class Vehicle:
         self.route = []
         self.route_index = 0
         self.trip_label = ""
+        self.start_name = ""
+        self.end_name = ""
+        self.start_coord = ()
+        self.end_coord = ()
 
-    
-    
+    def start_new_trip(self) -> None:
+
+        self.start_name, self.end_name = pick_random_trip() # Pick two random Metro Station name   
+
+        # Convert station name to coordinates
+        self.start_coord = BAKU_METRO_STATIONS[self.start_name] 
+        self.end_coord = BAKU_METRO_STATIONS[self.end_name]
+
+        # Fetch route between these two coordinates
+        new_route = fetch_route(self.start_coord[0],self.start_coord[1]\
+                                ,self.end_coord[0], self.end_coord[1])
+        
+        if new_route: 
+           self.route = new_route 
+           self.route_index = 0
+           print(f'New trip: {self.start_name} -> {self.end_name} ({len(self.route)} points)')
+           #print(route)
+        else: 
+            print(f'Failed to fetch route from {self.start_name} to {self.end_name}, retrying next tick')
 
 
 
+    async def simulate_vehicle(self,broadcast) -> None:
+        """Moves the vehicle a small random step every second"""
+
+        print("Hello")
+        self.start_new_trip()
+
+        while True:
+            try:
+                if not self.route:
+                    print(f'Not route: {self.route}')
+                    self.start_new_trip()
+                    await asyncio.sleep(1)
 
 
+                if self.route_index >= len(self.route):
+
+                    print(f'Route index bigger.')
+                    print(f'Route len= {len(self.route)}')
+                    print(f'Route index = {self.route_index}')
+                    self.start_new_trip()
+                    await asyncio.sleep(1)
+                    continue
 
 
-
-ECONDS_PER_HOUR = 3600
-KM_PER_DEGREE_LATITUDE = 111 
+                self.lon, self.lat = self.route[self.route_index]
 
 
-vehicle = { 
-    "lat": 40.4093,
-    "lon": 49.8671,
-    "heading": random.uniform(0,360)
-}
+                self.route_index += 1
+                print('Route index icremented')
 
+                payload = json.dumps({
+                    "lat": round(self.lat,6),
+                    "lon": round(self.lon,6),
+                    "heading": self.heading,
+                    "trip":  f'{self.start_name} -> {self.end_name}',
+                    "start_lat": self.start_coord[0], "start_lon": self.start_coord[1],
+                    "end_lat": self.end_coord[0], "end_lon": self.end_coord[1],
+                    "timestamp": time.time(),
+                    "test": "test"
+                })
 
+               # print(payload)
+
+                await broadcast(payload)
+                await asyncio.sleep(1)
+
+            except Exception as e:
+                print(f'simulate_vehicle loop error: {e}')
+                break
+                
+        await asyncio.sleep(1)
 
 #logging.basicConfig(level=logging.DEBUG)
-
-host = "localhost"
-port = 9092
 
 def test_kafka(host,port) -> bool:
     """
@@ -69,7 +127,7 @@ def test_kafka(host,port) -> bool:
     except Exception as e:
         print(f'TCP connection failed')
         return False
-
+"""
 try:
     producer = KafkaProducer( 
           bootstrap_servers=BOOTSTRAP ,
@@ -80,97 +138,4 @@ try:
 
 except KafkaError as e:
      print(f"Connection failed {e}")
-
-def start_new_trip(): 
-    """
-    Randomly pick two metro stations and calculate route
-
-    Args: 
-
-
-    Returns: 
-
-        dict: 
-    """
-
-    global route, route_index , vehicle , start_name, end_name, start_coord, end_coord
-
-    start_name , end_name = pick_random_trip() 
-
-    start_coord = BAKU_METRO_STATIONS[start_name]
-    end_coord = BAKU_METRO_STATIONS[end_name]
-
-    vehicle['lat'] , vehicle['lon'] = start_coord
-
-
-    new_route = fetch_route(start_coord[0],start_coord[1],end_coord[0], end_coord[1])
-    if new_route: 
-        route = new_route 
-        route_index = 0
-        print(f'new trip: {start_name} -> {end_name} ({len(route)} points)')
-        print(route)
-
-    else: 
-        print(f'Failed to fetch route from {start_name} to {end_name}, retrying next tick')
-
-
-
-
-
-async def simulate_vehicle(broadcast) -> None:
-    """Moves the vehicle a small random step every second"""
-
-    global route_index , route
-
-    start_new_trip()
-    print("New trip was created")
-
-
-    while True:
-        try:
-            if not route:
-                print(f'Not route: {route}')
-                start_new_trip()
-                await asyncio.sleep(1)
-
-
-            if route_index >= len(route):
-                print(f'Route index bigger.')
-
-                print(f'Route len= {len(route)}')
-                print(f'Route index = {route_index}')
-                start_new_trip()
-                await asyncio.sleep(1)
-                continue
-
-
-            lon, lat = route[route_index]
-            vehicle['lat'] = lat
-            vehicle['lon'] = lon
-            route_index += 1
-            print('Route index icremented')
-            payload = json.dumps({
-                "lat": round(vehicle['lat'],6),
-                "lon": round(vehicle['lon'],6),
-                "heading": vehicle["heading"],
-                "trip":  f'{start_name} -> {end_name}',
-                "start_lat": start_coord[0], "start_lon": start_coord[1],
-                "end_lat": end_coord[0], "end_lon": end_coord[1],
-                "timestamp": time.time() 
-            })
-
-            print(payload)
-
-            # await broadcast(payload)
-            await asyncio.sleep(1)
-
-        except Exception as e:
-            print(f'simulate_vehicle loop error: {e}')
-            break
-            
-    await asyncio.sleep(1)
-
-
-test_kafka(host=host,port=port)
-
-simulate_vehicle(broadcast)
+"""
