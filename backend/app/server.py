@@ -38,7 +38,6 @@ async def broadcast(payload):
     dead = set()
 
     for client in connected_clients:
-
         try:
             await client.send_text(payload)
             print(f"broadcasting to {len(connected_clients)} client(s): {payload}")

@@ -13,6 +13,28 @@ import asyncio
 
 
 
+class Vehicle:
+
+    def __init__(self, vehicle_id):
+        self.vehicle_id = vehicle_id
+        self.lat = 0
+        self.lon = 0
+        self.speed_kmh = 0
+        self.heading = 0
+        self.route = []
+        self.route_index = 0
+        self.trip_label = ""
+
+    
+    
+
+
+
+
+
+
+
+
 ECONDS_PER_HOUR = 3600
 KM_PER_DEGREE_LATITUDE = 111 
 
@@ -102,7 +124,7 @@ async def simulate_vehicle(broadcast) -> None:
 
     start_new_trip()
     print("New trip was created")
-    
+
 
     while True:
         try:
