@@ -11,7 +11,7 @@ Currently uses public OSRM demo server
 
 import requests
 import random
-from backend.services.baku_metro_stations import BAKU_METRO_STATIONS
+from backend.static.baku_metro_stations import BAKU_METRO_STATIONS
 import json
 
 OSRM_URL = "http://router.project-osrm.org/route/v1/driving"

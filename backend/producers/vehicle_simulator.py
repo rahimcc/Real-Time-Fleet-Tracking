@@ -3,7 +3,7 @@ import time
 import random
 from fastapi import FastAPI , WebSocket , WebSocketDisconnect
 from backend.services.routing import fetch_route, pick_random_trip
-from backend.services.baku_metro_stations import BAKU_METRO_STATIONS
+from backend.static.baku_metro_stations import BAKU_METRO_STATIONS
 import asyncio
 
 
@@ -103,8 +103,6 @@ async def simulate_vehicle(broadcast) -> None:
             print(f'simulate_vehicle loop error: {e}')
             break
             
-
-
     await asyncio.sleep(1)
 
  

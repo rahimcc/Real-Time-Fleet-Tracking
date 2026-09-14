@@ -7,6 +7,7 @@ from fastapi import FastAPI , WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from backend.producers.vehicle_simulator import simulate_vehicle
+from backend.producers.producer_drivers import Vehicle
 
 
 
@@ -38,7 +39,6 @@ async def broadcast(payload):
     dead = set()
 
     for client in connected_clients:
-
         try:
             await client.send_text(payload)
             print(f"broadcasting to {len(connected_clients)} client(s): {payload}")
@@ -51,6 +51,7 @@ async def broadcast(payload):
 @app.on_event("startup")
 async def startup():
     print("STARTUP: creating simulate_vehicle task")
-    asyncio.create_task(simulate_vehicle(broadcast))
+    vehicle = Vehicle("vehicle-1")
+    asyncio.create_task(vehicle.simulate_vehicle(broadcast))
     print("STARTUP: task created")
  

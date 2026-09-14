@@ -1,34 +1,136 @@
 import json
-import random
 import time 
+import random
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 import socket
 import logging
+from backend.static.constants import BOOTSTRAP, CITY_CENTER , NUM_DRIVERS
+from backend.static.baku_metro_stations import BAKU_METRO_STATIONS
+from backend.services.routing import pick_random_trip, fetch_route
+import asyncio
 
 
-logging.basicConfig(level=logging.DEBUG)
+ECONDS_PER_HOUR = 3600
+KM_PER_DEGREE_LATITUDE = 111
 
 host = "localhost"
 port = 9092
 
-try: 
-    sock = socket.create_connection((host,port), timeout = 5 )
-    print(f" TCP connection to {host}:{port} succeded.")
-    sock.close()
 
-except Exception as e:
-    print(f'TCP connection failed')
+class Vehicle:
+
+    def __init__(self, vehicle_id):
+        self.vehicle_id = vehicle_id
+        self.lat = 0
+        self.lon = 0
+        self.speed_kmh = 0
+        self.heading = 0
+        self.route = []
+        self.route_index = 0
+        self.trip_label = ""
+        self.start_name = ""
+        self.end_name = ""
+        self.start_coord = ()
+        self.end_coord = ()
+
+    def start_new_trip(self) -> None:
+
+        self.start_name, self.end_name = pick_random_trip() # Pick two random Metro Station name   
+
+        # Convert station name to coordinates
+        self.start_coord = BAKU_METRO_STATIONS[self.start_name] 
+        self.end_coord = BAKU_METRO_STATIONS[self.end_name]
+
+        # Fetch route between these two coordinates
+        new_route = fetch_route(self.start_coord[0],self.start_coord[1]\
+                                ,self.end_coord[0], self.end_coord[1])
+        
+        if new_route: 
+           self.route = new_route 
+           self.route_index = 0
+           print(f'New trip: {self.start_name} -> {self.end_name} ({len(self.route)} points)')
+           #print(route)
+        else: 
+            print(f'Failed to fetch route from {self.start_name} to {self.end_name}, retrying next tick')
 
 
-BOOTSTRAP = "127.0.0.1:9092"
-CITY_CENTER = (37.7749, -122.4194)
-NUM_DRIVERS = 15
+
+    async def simulate_vehicle(self,broadcast) -> None:
+        """Moves the vehicle a small random step every second"""
+
+        print("Hello")
+        self.start_new_trip()
+
+        while True:
+            try:
+                if not self.route:
+                    print(f'Not route: {self.route}')
+                    self.start_new_trip()
+                    await asyncio.sleep(1)
 
 
+                if self.route_index >= len(self.route):
+
+                    print(f'Route index bigger.')
+                    print(f'Route len= {len(self.route)}')
+                    print(f'Route index = {self.route_index}')
+                    self.start_new_trip()
+                    await asyncio.sleep(1)
+                    continue
+
+
+                self.lon, self.lat = self.route[self.route_index]
+
+
+                self.route_index += 1
+                print('Route index icremented')
+
+                payload = json.dumps({
+                    "lat": round(self.lat,6),
+                    "lon": round(self.lon,6),
+                    "heading": self.heading,
+                    "trip":  f'{self.start_name} -> {self.end_name}',
+                    "start_lat": self.start_coord[0], "start_lon": self.start_coord[1],
+                    "end_lat": self.end_coord[0], "end_lon": self.end_coord[1],
+                    "timestamp": time.time(),
+                    "test": "test"
+                })
+
+               # print(payload)
+
+                await broadcast(payload)
+                await asyncio.sleep(1)
+
+            except Exception as e:
+                print(f'simulate_vehicle loop error: {e}')
+                break
+                
+        await asyncio.sleep(1)
+
+#logging.basicConfig(level=logging.DEBUG)
+
+def test_kafka(host,port) -> bool:
+    """
+    - Connects to Kafka to check connection
+    
+    Args: host, port
+
+    Returns: Boolean value 
+    """
+    try: 
+        sock = socket.create_connection((host,port), timeout = 5)
+        print(f"TCP connection to {host}:{port} succeded.")
+        sock.close()
+        return True
+
+    except Exception as e:
+        print(f'TCP connection failed')
+        return False
+"""
 try:
     producer = KafkaProducer( 
-          bootstrap_servers=BOOTSTRAP,
+          bootstrap_servers=BOOTSTRAP ,
           value_serializer=lambda v: json.dumps(v).encode('utf-8'),
           key_serializer=lambda k: k.encode('utf-8')
     )
@@ -36,37 +138,4 @@ try:
 
 except KafkaError as e:
      print(f"Connection failed {e}")
-
-
-drivers = { 
-    f'driver-{i}': { 
-        "lat": CITY_CENTER[0] + random.uniform(-0.05, 0.05),
-        "lon": CITY_CENTER[1] + random.uniform(-0.05,0.05),
-        "status": "available"
-        } for i in range(NUM_DRIVERS)
-    }
-
-print(f'Simulating {NUM_DRIVERS} drivers... Ctrl + C to Stop')
-
-
-while True: 
-    for driver_id, state in drivers.items():
-
-        state['lat'] += random.uniform(-0.001, 0.001)
-        state['lon'] += random.uniform(-0.001, 0.001)
-
-        event = { 
-            "driver_id": driver_id,
-            "lat": round(state['lat'],6),
-            "lon": round(state['lon'],6),
-            "speed_kmh": round(random.uniform(0,60),1),
-            "status": state['status'],
-            "timestamp": time.time() 
-        }
-
-
-        producer.send('driver-locations', key=driver_id, value=event)
-
-    producer.flush()
-    time.sleep(1.5)
-
+"""
