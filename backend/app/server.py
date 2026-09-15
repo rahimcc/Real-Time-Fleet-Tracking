@@ -22,6 +22,13 @@ async def index():
         return f.read()
 
 
+@app.get("/api/state")
+async def state():
+    vehicles = await r.hgetall("vehicle:live")
+    return {"vehicles": {k: json.loads(v) for k, v in vehicles.items()}}
+
+
+
 @app.websocket("/ws")
 async def web_socketendpoint(websocket: WebSocket):
     await websocket.accept()
