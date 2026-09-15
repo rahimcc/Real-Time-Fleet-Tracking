@@ -36,9 +36,11 @@ async def web_socketendpoint(websocket: WebSocket):
 
 async def redis_listener():
     pubsub = r.pubsub()
-    await pubsub.subscribe("vehicles:updates")
+    await pubsub.subscribe("vehicle:update")
 
     async for message in pubsub.listen():
+
+        print(message)
         if message["type"] != "message":
             continue
 
@@ -56,7 +58,6 @@ async def redis_listener():
 @app.on_event("startup")
 async def startup():
     print("STARTUP: creating simulate_vehicle task")
-    vehicle = Vehicle("vehicle-1")
-    asyncio.create_task(vehicle.simulate_vehicle(broadcast))
+    asyncio.create_task(redis_listener())
     print("STARTUP: task created")
  
