@@ -94,6 +94,22 @@ services:
       redis:
         condition: service_healthy
 
+  produce-fleet:
+    build: .
+    container_name: produce_fleet
+    restart: unless-stopped
+    command: ["python3", "-m", "backend.producers.produce_fleet"]
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   consumer:
     build: .
     container_name: consumer
