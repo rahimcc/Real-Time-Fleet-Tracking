@@ -37,7 +37,6 @@ class Vehicle:
     def start_new_trip(self) -> None:
 
         self.start_name, self.end_name = pick_random_trip() # Pick two random Metro Station name   
-
         # Convert station name to coordinates
         self.start_coord = BAKU_METRO_STATIONS[self.start_name] 
         self.end_coord = BAKU_METRO_STATIONS[self.end_name]
@@ -139,3 +138,16 @@ try:
 except KafkaError as e:
      print(f"Connection failed {e}")
 """
+
+async def print_broadcast(payload):
+    print(payload)
+
+
+
+async def main():
+    vehicle = Vehicle("vehicle-1")
+    await vehicle.simulate_vehicle(print_broadcast)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
