@@ -55,7 +55,7 @@ class Vehicle:
 
 
 
-    async def simulate_vehicle(self,broadcast) -> None:
+    async def simulate_vehicle(self, broadcast) -> None:
         """Moves the vehicle a small random step every second"""
 
         print("Hello")

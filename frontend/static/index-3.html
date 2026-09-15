@@ -51,9 +51,28 @@
       .setLngLat([49.8671, 40.4093])
       .addTo(map);
 
+    const markers = {};  // vehicle_id -> {marker, inner}
+
+    function upsertVehicle(d) {
+      if (!markers[d.vehicle_id]) {
+        const el = document.createElement('div');
+        el.className = 'vehicle-dot';
+        const inner = document.createElement('div');
+        inner.className = 'vehicle-dot-inner';
+        inner.textContent = '🚌';
+        el.appendChild(inner);
+        const marker = new maplibregl.Marker({ element: el }).setLngLat([d.lon, d.lat]).addTo(map);
+        markers[d.vehicle_id] = { marker, inner };
+    }
+     const { marker, inner } = markers[d.vehicle_id];
+     marker.setLngLat([d.lon, d.lat]);
+     inner.style.transform = `rotate(${d.heading}deg)`;
+  }
+    
+
     // separate markers for start/end, distinct color from the bus
-    const startMarker = new maplibregl.Marker({ color: '#22c55e' }); // green
-    const endMarker = new maplibregl.Marker({ color: '#ef4444' });   // red
+  //  const startMarker = new maplibregl.Marker({ color: '#22c55e' }); // green
+  //  const endMarker = new maplibregl.Marker({ color: '#ef4444' });   // red
 
     const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:" ;
 
@@ -65,17 +84,10 @@
     ws.onclose = () => console.log("WebSocket closed");
 
     ws.onmessage = (event) => {
-      const d = JSON.parse(event.data);
-      console.log(d)
-      //console.log("received location:", d.lat, d.lon, "heading:", d.heading);
-
-      marker.setLngLat([d.lon, d.lat]);
-      map.easeTo({ center: [d.lon, d.lat], duration: 900 });
-
-      if (d.start_lat && d.end_lat) {
-          startMarker.setLngLat([d.start_lon, d.start_lat]).addTo(map);
-          endMarker.setLngLat([d.end_lon, d.end_lat]).addTo(map);
-      }
+         const d = JSON.parse(event.data);
+         console.log(d)
+         upsertVehicle(d);
+      
 
       document.getElementById('speed').textContent = d.speed_kmh;
       document.getElementById('updated').textContent = new Date(d.timestamp * 1000).toLocaleTimeString();
