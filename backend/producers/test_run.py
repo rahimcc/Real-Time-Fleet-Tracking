@@ -1,5 +1,9 @@
 import asyncio
 from backend.producers.producer_drivers import Vehicle
+from kafka import KafkaProducer
+import json
+
+
 
 
 async def print_broadcast(payload):
@@ -12,4 +16,14 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+
+    print("Test run for Kafka")
+    producer = KafkaProducer( 
+        bootstrap_servers="kafka:9092",
+        value_serializer=lambda v: json.dumps(v).encode("utf-8")
+    )
+
+
+    producer.send("vehicle-locations", value={"test": "hello"})
+    producer.flush()
+    print("sent")

@@ -37,7 +37,6 @@ class Vehicle:
     def start_new_trip(self) -> None:
 
         self.start_name, self.end_name = pick_random_trip() # Pick two random Metro Station name   
-
         # Convert station name to coordinates
         self.start_coord = BAKU_METRO_STATIONS[self.start_name] 
         self.end_coord = BAKU_METRO_STATIONS[self.end_name]
@@ -61,6 +60,11 @@ class Vehicle:
 
         print("Hello")
         self.start_new_trip()
+        producer = KafkaProducer( 
+                                bootstrap_servers="kafka:9092",
+                                value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+                                key_serializer=lambda k: k.encode("utf-8")
+                            )
 
         while True:
             try:
@@ -86,7 +90,8 @@ class Vehicle:
                 self.route_index += 1
                 print('Route index icremented')
 
-                payload = json.dumps({
+                payload = {
+                    "vehicle-id": self.vehicle_id,
                     "lat": round(self.lat,6),
                     "lon": round(self.lon,6),
                     "heading": self.heading,
@@ -95,9 +100,15 @@ class Vehicle:
                     "end_lat": self.end_coord[0], "end_lon": self.end_coord[1],
                     "timestamp": time.time(),
                     "test": "test"
-                })
+                }
 
                # print(payload)
+              
+                
+                
+                producer.send("vehicle-locations", key=self.vehicle_id, value=payload)
+                producer.flush()
+                print("Event sent to Kafka")
 
                 await broadcast(payload)
                 await asyncio.sleep(1)
@@ -139,3 +150,16 @@ try:
 except KafkaError as e:
      print(f"Connection failed {e}")
 """
+
+async def print_broadcast(payload):
+    print(payload)
+
+
+
+async def main():
+    vehicle = Vehicle("vehicle-1")
+    await vehicle.simulate_vehicle(print_broadcast)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
