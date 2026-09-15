@@ -60,6 +60,11 @@ class Vehicle:
 
         print("Hello")
         self.start_new_trip()
+        producer = KafkaProducer( 
+                                bootstrap_servers="kafka:9092",
+                                value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+                                key_serializer=lambda k: k.encode("utf-8")
+                            )
 
         while True:
             try:
@@ -98,6 +103,12 @@ class Vehicle:
                 })
 
                # print(payload)
+              
+                
+                
+                producer.send("vehicle-locations", key=self.vehicle_id, value=payload)
+                producer.flush()
+                print("Event sent to Kafka")
 
                 await broadcast(payload)
                 await asyncio.sleep(1)
