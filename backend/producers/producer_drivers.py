@@ -86,6 +86,7 @@ class Vehicle:
                 print('Route index icremented')
 
                 payload = json.dumps({
+                    "vehicle-id": self.vehicle_id,
                     "lat": round(self.lat,6),
                     "lon": round(self.lon,6),
                     "heading": self.heading,

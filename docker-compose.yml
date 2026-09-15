@@ -8,7 +8,7 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://kafka:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
@@ -23,20 +23,19 @@ services:
       timeout: 10s
       retries: 10
       start_period: 30s
-
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
+  
+  kafka-init:
+    image: apache/kafka:3.8.0
+    container_name: kafka-init
     depends_on:
       kafka:
         condition: service_healthy
-    ports:
-      - "8081:8080"
-    
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      DYNAMIC_CONFIG_ENABLED: "true"
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        nslookup kafka
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic vehicle-locations --partitions 3 --replication-factor 1 --bootstrap-server kafka:9092
+        echo "Topic create"
 
   redis:
     image: redis:7-alpine
@@ -86,6 +85,12 @@ services:
     command: ["python3", "-m", "backend.producers.producer_drivers"]
     environment:
       KAFKA_BOOTSTRAP: kafka:9092
+
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     
 
 volumes:
