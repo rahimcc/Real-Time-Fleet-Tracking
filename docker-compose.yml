@@ -93,6 +93,19 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  consumer:
+    build: .
+    container_name: consumer
+    restart: unless-stopped
+    command: ["python3", "-u", "-m","backend.consumers.consumer_to_redis"]
+    depends_on:
+       kafka-init:
+        condition: service_completed_successfully
+       kafka:
+        condition: service_healthy
+       redis:
+        condition: service_healthy
     
 
 volumes:
