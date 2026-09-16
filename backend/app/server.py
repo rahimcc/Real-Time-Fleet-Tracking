@@ -9,10 +9,13 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from backend.producers.vehicle_simulator import simulate_vehicle
 from backend.producers.producer_drivers import Vehicle
+from fastapi.staticfiles import StaticFiles
 import redis.asyncio as aredis
 
 connected_clients: set[WebSocket] = set()
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 r = aredis.Redis(host='redis', port = 6379, decode_responses=True)
 
 

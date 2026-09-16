@@ -1,0 +1,28 @@
+.vehicle-popup {
+  min-width: 180px;
+  font-family: sans-serif;
+}
+.vehicle-popup-header {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+}
+.vehicle-popup-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 3px 0;
+  color: #444;
+}
+.vehicle-popup-row strong {
+  color: #111;
+}
+
+/* MapLibre wraps your HTML in its own container — style that too */
+.maplibregl-popup-content {
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
