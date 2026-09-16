@@ -15,8 +15,13 @@ export function createVehicleMarker(map, lon, lat) {
   const inner = document.createElement('div');
   inner.className = 'vehicle-dot-inner';
   inner.textContent = '🚌';
- 
   el.appendChild(inner);
-  const marker = new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(map);
-  return { marker, inner };
+
+  const popup = new maplibregl.Popup({offset: 20, closeButton: true })
+
+  const marker = new maplibregl.Marker({ element: el })
+                .setLngLat([lon, lat])
+                .setPopup(popup)
+                .addTo(map);
+  return { marker, inner, popup };
 }
