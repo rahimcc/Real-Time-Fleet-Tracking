@@ -1,9 +1,6 @@
-    const map = new maplibregl.Map({
-      style: 'https://tiles.openfreemap.org/styles/liberty',
-      container: 'map',
-      center: [49.8671, 40.4093],
-      zoom: 13
-    });
+  
+import { createMap } from "./map";
+
 
 
     const markers = {};  // vehicle_id -> {marker, inner}
