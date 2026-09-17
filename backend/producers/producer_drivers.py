@@ -8,6 +8,7 @@ import logging
 from backend.static.constants import BOOTSTRAP, CITY_CENTER , NUM_DRIVERS
 from backend.static.baku_metro_stations import BAKU_METRO_STATIONS
 from backend.services.routing import pick_random_trip, fetch_route
+from backend.services.logger import setup_logger
 import asyncio
 
 
@@ -65,6 +66,7 @@ class Vehicle:
                                 value_serializer=lambda v: json.dumps(v).encode("utf-8"),
                                 key_serializer=lambda k: k.encode("utf-8")
                             )
+        logger = setup_logger('producer')
 
         while True:
             try:
@@ -110,7 +112,8 @@ class Vehicle:
                 producer.flush()
                 print("Event sent to Kafka")
 
-                await broadcast(payload)
+                logger.info(payload)
+                
                 await asyncio.sleep(1)
 
             except Exception as e:
@@ -157,7 +160,7 @@ async def print_broadcast(payload):
 
 
 async def main():
-    vehicle = Vehicle("vehicle-1")
+    vehicle = Vehicle("vehicle-6")
     await vehicle.simulate_vehicle(print_broadcast)
 
 
