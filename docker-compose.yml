@@ -35,6 +35,7 @@ services:
       - |
         nslookup kafka
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic vehicle-locations --partitions 3 --replication-factor 1 --bootstrap-server kafka:9092
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic train-locations --partitions 3 --replication-factor 1 --bootstrap-server kafka:9092
         echo "Topic create"
 
   redis:
@@ -69,6 +70,8 @@ services:
     build: .
     container_name: dashboard
     restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: "1"
     ports:
       - "8000:8000"   # no longer publicly mapped — only reachable by Caddy internally
     # remove any "ports: 8000:8000" line entirely
@@ -99,6 +102,22 @@ services:
     container_name: produce_fleet
     restart: unless-stopped
     command: ["python3", "-m", "backend.producers.produce_fleet"]
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  produce-train:
+    build: .
+    container_name: produce_train
+    restart: unless-stopped
+    command: ["python3", "-m", "backend.producers.producer_train"]
     environment:
       KAFKA_BOOTSTRAP: kafka:9092
 

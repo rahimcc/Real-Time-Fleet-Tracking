@@ -25,3 +25,24 @@ export function createVehicleMarker(map, lon, lat) {
                 .addTo(map);
   return { marker, inner, popup };
 }
+
+
+export function createTrainMarker(map, lon, lat) {
+  const trainEl = document.createElement('div');
+  trainEl.className = 'train-marker'
+  
+  const inner = document.createElement('img');
+  inner.className = 'train-icon';
+  inner.src = '/static/css/train.png';
+
+  trainEl.appendChild(inner);
+  
+
+  const popup = new maplibregl.Popup({offset: 20, closeButton: true })
+
+  const marker = new maplibregl.Marker({ element: trainEl })
+                .setLngLat([lon, lat])
+                .setPopup(popup)
+                .addTo(map);
+  return { marker, inner, popup };
+}
