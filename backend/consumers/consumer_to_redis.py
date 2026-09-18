@@ -31,7 +31,7 @@ def consume_driver_locations():
 
     for msg in consumer:
         event = msg.value
-        print(event)
+       # print(event)
         r.hset("vehicle:live", event["vehicle-id"], json.dumps(event))
         r.publish("vehicle:update", json.dumps(event))
 
@@ -51,7 +51,7 @@ def consume_train_locations():
     for msg in consumer:
         event = msg.value
         print(event)
-        r.hset("train:live", event["train-id"], json.dumps(event))
+        r.hset("train:live", event["train_id"], json.dumps(event))
         r.publish("train:update", json.dumps(event))
 
 

@@ -99,7 +99,7 @@ class Train:
                     print('Route index icremented')
     
                     payload = {
-                        "train-id": self.train_id,
+                        "train_id": self.train_id,
                         "lat": round(self.lat,6),
                         "lon": round(self.lon,6),
                         "heading": self.heading,

@@ -16,6 +16,7 @@ connected_clients: set[WebSocket] = set()
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+
 r = aredis.Redis(host='redis', port = 6379, decode_responses=True)
 
 
@@ -25,10 +26,16 @@ async def index():
         return f.read()
 
 
-@app.get("/api/state")
+@app.get("/api/vehicle/state")
 async def state():
     vehicles = await r.hgetall("vehicle:live")
     return {"vehicles": {k: json.loads(v) for k, v in vehicles.items()}}
+
+@app.get("/api/train/state")
+async def state():
+    vehicles = await r.hgetall("vehicle:live")
+    return {"vehicles": {k: json.loads(v) for k, v in vehicles.items()}}
+
 
 
 
@@ -36,6 +43,8 @@ async def state():
 async def web_socketendpoint(websocket: WebSocket):
     await websocket.accept()
     connected_clients.add(websocket)
+    print("Client connected")
+    print( connected_clients)
 
     try:
         while True: 
@@ -46,19 +55,19 @@ async def web_socketendpoint(websocket: WebSocket):
 
 async def redis_listener():
     pubsub = r.pubsub()
-    await pubsub.subscribe("vehicle:update")
+    await pubsub.subscribe("vehicle:update","train:update")
 
     async for message in pubsub.listen():
 
-        print(message)
         if message["type"] != "message":
+            print(f"Dropped: {message}")
             continue
 
         dead = set()
-
+        print(message)
         for client in connected_clients:
             try:
-                await client.send_text(message['data'])
+                await client.send_text(json.dumps(message))
             except Exception:
                 dead.add(client)
 
