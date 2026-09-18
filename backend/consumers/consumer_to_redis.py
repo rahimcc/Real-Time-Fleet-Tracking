@@ -35,6 +35,25 @@ def consume_driver_locations():
         r.hset("vehicle:live", event["vehicle-id"], json.dumps(event))
         r.publish("vehicle:update", json.dumps(event))
 
+def consume_train_locations():
+
+    print('Connecting to Kafka')
+
+    consumer = KafkaConsumer( 
+                "train-locations",
+                bootstrap_servers = "kafka:9092",
+                value_deserializer = lambda v: json.loads(v.decode("utf-8")),
+                key_deserializer = lambda k: k.decode("utf-8"),
+                group_id="redis-write",
+                request_timeout_ms=10000
+    )
+
+    for msg in consumer:
+        event = msg.value
+        print(event)
+        r.hset("train:live", event["train-id"], json.dumps(event))
+        r.publish("train:update", json.dumps(event))
+
 
 def consume_order_events():
 
@@ -65,6 +84,8 @@ if __name__ == "__main__":
     #Thread(target=consume_driver_locations, daemon= True).start()
     print("Consumer started")
     Thread(target=consume_driver_locations, daemon=True).start()
+    Thread(target=consume_train_locations, daemon=True).start()
+
     while True: 
         print("Consuming into Redis")
         print("Sleeping 10 seconds")
