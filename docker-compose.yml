@@ -63,6 +63,8 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy-data:/data
       - caddy-config:/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - dashboard
 
