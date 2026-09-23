@@ -3,7 +3,7 @@ livefleet.site {
 }
 
 erp.turyan.site {
-    reverse_proxy host.docker.internal:8080
+    reverse_proxy host.docker.internal:8082
 }
 
 crm.turyan.site { 
